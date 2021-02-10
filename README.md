@@ -1,0 +1,10 @@
+# GopherChat
+![logo](./assets/logo.png)\
+A simple chat app written in Go that allows you to message other people using the terminal. It is an extension of Revochat, with direct message (DM) features that allow the user to send messages directly to another user without having to put the message in a group where other registered members can see it
+## Key Features
+- Huge performance improvements
+- Usage of Cloud Firestore to store messages, which makes it much more secure than Realtime Database
+- Far fewer dependencies, and solid builds and dependency management
+- Cross Platform, which means that the source code can be built for any platform 
+## Design Pattern
+![Design Pattern](./assets/design.jpg)
