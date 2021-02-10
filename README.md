@@ -12,9 +12,17 @@ Special thanks to these tools and libraries for making this project possible :)
 - `fatih/colors` for Colourful Terminal Output
 - `golang.org/x/term` for Password Input
 ## Installation
-- MacOS/Linux (Arch: x64/arm64/386)
-    - `wget https://github.com/MahanthMohan/GopherChat/blob/main/bin/{os}/{arch}/main`
-- Windows/NT (Arch: x64/arm)
-    - `iwr -useb https://github.com/MahanthMohan/GopherChat/blob/main/bin/windows/{arch}/main.exe`
+### MacOS/Linux (Arch: x64/arm64/386)
+``` bash
+wget https://github.com/MahanthMohan/GopherChat/blob/main/bin/{os}/{arch}/chat`
+```
+### Windows/NT (Arch: x64/arm)
+``` powershell
+iwr -useb https://github.com/MahanthMohan/GopherChat/blob/main/bin/windows/{arch}/chat.exe
+```
+### Run
+```
+chat
+```
 ## Design Pattern
 ![Design Pattern](./assets/design.jpg)
