@@ -125,3 +125,7 @@ func GetAllUsernames() <-chan string {
 
 	return out
 }
+
+func Close() {
+	defer db.Close()
+}

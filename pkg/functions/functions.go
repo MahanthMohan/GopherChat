@@ -9,18 +9,20 @@ import (
 
 	db "github.com/MahanthMohan/GopherChat/pkg/database"
 	schema "github.com/MahanthMohan/GopherChat/pkg/schema"
+	"github.com/fatih/color"
 	"golang.org/x/term"
 )
 
 var (
-	usr     schema.User
-	scanner = bufio.NewScanner(os.Stdin)
-	uname   string
-	pw      string
+	usr    schema.User
+	reader = bufio.NewReader(os.Stdin)
+	uname  string
+	pw     string
 )
 
 func LaunchApp() {
 	var command string
+	color.Set(color.FgHiYellow, color.Bold)
 	fmt.Println("<<>>- <<>>- <<>>-  Welcome to GopherChat, A Terminal Chat App -<<>> -<<>> -<<>>")
 	fmt.Print("New (n/new) or Existing (e/existing) User: ")
 	fmt.Scan(&command)
@@ -35,6 +37,7 @@ func LaunchApp() {
 }
 
 func validateUserCredentials(usr schema.User) {
+	color.Set(color.FgHiRed, color.Bold)
 	if len(usr.Username) == 0 || len(usr.Password) == 0 {
 		fmt.Println("** Empty/Blank Password **")
 		RegisterNewUser()
@@ -45,6 +48,7 @@ func validateUserCredentials(usr schema.User) {
 		fmt.Println("** Password too short (Min 6 characters) **")
 		RegisterNewUser()
 	} else {
+		color.Set(color.FgHiGreen, color.Bold)
 		fmt.Println("** User Validation Successful **")
 		db.CreateUserDocument(usr)
 		LoginUser()
@@ -52,6 +56,7 @@ func validateUserCredentials(usr schema.User) {
 }
 
 func RegisterNewUser() {
+	color.Set(color.FgHiCyan, color.Bold)
 	fmt.Println("<<>>- Registration Screen -<<>>")
 	fmt.Print("Username/Name (No Spaces, Single Word): ")
 	fmt.Scan(&usr.Username)
@@ -74,6 +79,7 @@ func RegisterNewUser() {
 }
 
 func LoginUser() {
+	color.Set(color.FgHiBlue, color.Bold)
 	fmt.Println("<<>>- Login Screen -<<>>")
 	fmt.Print("Username/Name: ")
 	fmt.Scan(&uname)
@@ -92,6 +98,7 @@ func LoginUser() {
 		usr.IsGroupMember = false
 	}
 	if db.ValidateUserLoginCredentials(uname, pw) {
+		color.Set(color.FgHiGreen, color.Bold)
 		fmt.Println("** Login Successful **")
 		if !(usr.IsGroupMember) {
 			viewAllMessages(uname)
@@ -102,7 +109,8 @@ func LoginUser() {
 			sendUserMessages()
 		}
 	} else {
-		fmt.Println("\n** Please Try Again **")
+		color.Set(color.FgHiRed, color.Bold)
+		fmt.Println("** Please Try Again **")
 		// Repeat LoginUser() a maximum of 3 times before redirecting user back to registration screen
 		for i := 0; i < 3; i++ {
 			LoginUser()
@@ -113,6 +121,11 @@ func LoginUser() {
 }
 
 func viewAllMessages(username string) {
+	if username == "Group" {
+		color.Set(color.FgHiGreen, color.Bold)
+	} else {
+		color.Set(color.FgHiMagenta, color.Bold)
+	}
 	fmt.Printf("<<>>- %s's Messages -<<>>\n", username)
 	messages := db.GetAllMessages(username)
 	if len(messages) == 0 {
@@ -130,6 +143,7 @@ func viewAllMessages(username string) {
 }
 
 func sendUserMessages() {
+	color.Set(color.FgHiMagenta, color.Bold)
 	fmt.Println("<<>>- Send Messages -<<>>")
 	fmt.Println("--- List of Users ---")
 	var groupMessages, dmMessages []string
@@ -141,31 +155,35 @@ func sendUserMessages() {
 		fmt.Print("Your Choice (msg/dm/(q/quit)): ")
 		fmt.Scan(&userChoice)
 		if userChoice == "msg" {
+			color.Set(color.FgHiGreen, color.Bold)
 			var groupMessage string
 			fmt.Print("Your Group Message: ")
-			scanner.Scan()
-			groupMessage = scanner.Text()
+			groupMessage, _ = reader.ReadString(byte('\n'))
 			groupMessage = fmt.Sprintf("%s: %s", uname, groupMessage)
 			groupMessages = append(groupMessages, groupMessage)
 			db.SendUserMessage("Group", groupMessages)
 			fmt.Println("")
 			viewAllMessages("Group")
 		} else if userChoice == "dm" {
+			color.Set(color.FgHiMagenta, color.Bold)
 			var dmMessage string
 			fmt.Print("Reciever: ")
 			fmt.Scan(&reciever)
 			fmt.Print("Your Direct Message: ")
-			scanner.Scan()
-			dmMessage = scanner.Text()
+			dmMessage, _ = reader.ReadString(byte('\n'))
 			dmMessage = fmt.Sprintf("%s: %s", uname, dmMessage)
 			dmMessages = append(dmMessages, dmMessage)
 			db.SendUserMessage(reciever, dmMessages)
 			fmt.Println("")
 			viewAllMessages(uname)
 		} else if userChoice == "q" || userChoice == "quit" {
+			color.Set(color.FgHiRed, color.Bold)
 			fmt.Println("<<>>- Sad to see you go -<<>>")
+			db.Close()
+			color.Unset()
 			syscall.Exit(0)
 		} else {
+			color.Set(color.FgHiRed, color.Bold)
 			fmt.Println("** Invalid Choice **")
 			sendUserMessages()
 		}
