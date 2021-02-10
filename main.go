@@ -1,4 +1,4 @@
-package chat
+package main
 
 import (
 	launcher "github.com/MahanthMohan/GopherChat/pkg/functions"

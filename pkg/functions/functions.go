@@ -48,7 +48,7 @@ func validateUserCredentials(usr schema.User) {
 		RegisterNewUser()
 	} else {
 		color.Set(color.FgHiGreen, color.Bold)
-		fmt.Println("** User Validation Successful **")
+		fmt.Println("** Registration Successful **")
 		db.CreateUserDocument(usr)
 		LoginUser()
 	}
@@ -155,26 +155,21 @@ func sendUserMessages() {
 	for {
 		fmt.Print("Your Choice (msg/dm/(q/quit)): ")
 		fmt.Scan(&userChoice)
+		reader := bufio.NewReader(os.Stdin)
 		if userChoice == "msg" {
 			color.Set(color.FgHiGreen, color.Bold)
-			var groupMessage string
 			fmt.Print("Your Group Message: ")
-			scanner := bufio.NewScanner(os.Stdin)
-			scanner.Scan()
-			groupMessage = scanner.Text()
+			groupMessage, _ := reader.ReadString('\n')
 			groupMessage = fmt.Sprintf("%s: %s", uname, groupMessage)
 			groupMessages = append(groupMessages, groupMessage)
 			db.SendUserMessage("Group", groupMessages)
 			viewAllMessages("Group")
 		} else if userChoice == "dm" {
 			color.Set(color.FgHiMagenta, color.Bold)
-			var dmMessage string
 			fmt.Print("Reciever: ")
 			fmt.Scan(&reciever)
 			fmt.Print("Your Direct Message: ")
-			scanner := bufio.NewScanner(os.Stdin)
-			scanner.Scan()
-			dmMessage = scanner.Text()
+			dmMessage, _ := reader.ReadString('\n')
 			dmMessage = fmt.Sprintf("%s: %s", uname, dmMessage)
 			dmMessages = append(dmMessages, dmMessage)
 			db.SendUserMessage(reciever, dmMessages)
