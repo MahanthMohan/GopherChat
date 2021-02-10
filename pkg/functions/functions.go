@@ -3,34 +3,31 @@ package functions
 import (
 	"fmt"
 	"strings"
+	"syscall"
 
 	db "github.com/MahanthMohan/GopherChat/pkg/database"
 	schema "github.com/MahanthMohan/GopherChat/pkg/schema"
+	"golang.org/x/term"
 )
 
 var (
-	usr schema.User
+	usr   schema.User
+	uname string
+	pw    string
 )
 
 func LaunchApp() {
 	var command string
 	fmt.Println("<<>>-<<>>-<<>>-<<>>-<<>>-  Welcome to GopherChat, A Terminal Chat App <<>>-<<>>-<<>>-<<>>-<<>>-")
-	fmt.Print("New (n/new) or Exisiting (e/existing) User: ")
+	fmt.Print("New (n/new) or Existing (e/existing) User: ")
 	fmt.Scan(&command)
-	for {
-		switch command {
-		case "n":
-		case "new":
-			RegisterNewUser()
-
-		case "e":
-		case "existing":
-			LoginUser()
-
-		default:
-			fmt.Println("** Invalid Choice **")
-			LaunchApp()
-		}
+	if command == "n" || command == "new" {
+		RegisterNewUser()
+	} else if command == "e" || command == "existing" {
+		LoginUser()
+	} else {
+		fmt.Println("** Invalid Choice **")
+		LaunchApp()
 	}
 }
 
@@ -46,36 +43,50 @@ func validateUserCredentials(usr schema.User) {
 		RegisterNewUser()
 	} else {
 		fmt.Println("** User Validation Successful **")
+		db.CreateUserDocument(usr)
 		LoginUser()
 	}
 }
 
 func RegisterNewUser() {
 	fmt.Println("<<>>- Registration Screen -<<>>")
-	fmt.Print("Username/Name: ")
+	fmt.Print("Username/Name (No Spaces, Single Word): ")
 	fmt.Scan(&usr.Username)
 	fmt.Print("Password: ")
-	fmt.Scan(&usr.Password)
-	fmt.Print("Want to be a group member (true, false): ")
-	fmt.Scanf("%t", &usr.IsGroupMember)
-	usr.Messages = []schema.Message{}
+	bytepw, err := term.ReadPassword(int(syscall.Stdin))
+	if err != nil {
+		panic(err)
+	}
+	usr.Password = string(bytepw)
+	var groupMemberChoice string
+	fmt.Print("\nWant to be a group member (y/N): ")
+	fmt.Scan(&groupMemberChoice)
+	if groupMemberChoice == "y" {
+		usr.IsGroupMember = true
+	} else if groupMemberChoice == "N" {
+		usr.IsGroupMember = false
+	}
+	usr.Messages = []string{}
 	validateUserCredentials(usr)
 }
 
 func LoginUser() {
 	fmt.Println("<<>>- Login Screen -<<>>")
-	var uname, pw string
 	fmt.Print("Username/Name: ")
 	fmt.Scan(&uname)
 	fmt.Print("Password: ")
-	fmt.Scan(&pw)
-	if uname == usr.Username && pw == usr.Password {
+	bytepw, err := term.ReadPassword(int(syscall.Stdin))
+	if err != nil {
+		panic(err)
+	}
+	pw = string(bytepw)
+	if db.ValidateUserLoginCredentials(uname, pw) {
 		fmt.Println("** Login Successful **")
 		if !(usr.IsGroupMember) {
-			viewAllMessages(usr.Username)
+			viewAllMessages(uname)
 		} else {
 			viewAllMessages("Group")
-			viewAllMessages(usr.Username)
+			viewAllMessages(uname)
 		}
 	} else {
 		fmt.Println("** Please Try Again **")
@@ -89,15 +100,16 @@ func LoginUser() {
 
 func viewAllMessages(username string) {
 	fmt.Printf("<<>>- %s's Messages -<<>>\n", username)
-	for _, msg := range db.GetAllMessages(username) {
-		fmt.Println(msg.Author, ": ", msg.Content)
+	messages := db.GetAllMessages(username)
+	for _, msg := range messages {
+		fmt.Println(msg.(string))
 	}
 }
 
 func sendUserMessages() {
 	fmt.Println("<<>>- Send Messages -<<>>")
 	fmt.Println("--- List of Users ---")
-	var groupMessages, dmMessages []schema.Message
+	var groupMessages, dmMessages []string
 	for _, user := range db.GetAllUsernames() {
 		fmt.Println(user)
 	}
@@ -106,16 +118,15 @@ func sendUserMessages() {
 		fmt.Print("Your Choice (msg/dm/(q/quit)): ")
 		fmt.Scan(&userChoice)
 		if userChoice == "msg" {
-			var groupMessage schema.Message
-			groupMessage.Author = usr.Username
+			var groupMessage string
 			fmt.Print("Your Group Message: ")
-			fmt.Scan(&groupMessage.Content)
+			fmt.Scan(groupMessage)
+			groupMessage = fmt.Sprintf("%s: %s", uname, groupMessage)
 			groupMessages = append(groupMessages, groupMessage)
 			db.SendUserMessage("Group", groupMessages)
 			viewAllMessages("Group")
 		} else if userChoice == "dm" {
-			var dmMessage schema.Message
-			dmMessage.Author = usr.Username
+			var dmMessage string
 			fmt.Println("--- List of Users ---")
 			for _, user := range db.GetAllUsernames() {
 				fmt.Println(user)
@@ -123,10 +134,11 @@ func sendUserMessages() {
 			fmt.Print("Reciever: ")
 			fmt.Scan(&reciever)
 			fmt.Print("Your Direct Message: ")
-			fmt.Scan(&dmMessage.Content)
+			fmt.Scan(&dmMessage)
+			dmMessage = fmt.Sprintf("%s: %s", uname, dmMessage)
 			dmMessages = append(dmMessages, dmMessage)
 			db.SendUserMessage(reciever, dmMessages)
-			viewAllMessages(usr.Username)
+			viewAllMessages(uname)
 		} else if userChoice == "q" || userChoice == "quit" {
 			fmt.Println("<<>>- Hope to see you soon! -<<>>")
 			break

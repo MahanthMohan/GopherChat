@@ -1,8 +1,9 @@
 package database
 
 import (
-	"cloud.google.com/go/firestore"
 	"context"
+
+	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
 	"github.com/MahanthMohan/GopherChat/pkg/schema"
 	"google.golang.org/api/option"
@@ -51,7 +52,7 @@ func UpdateMemberStatus(usr schema.User, isGroupMember bool) {
 	}
 }
 
-func SendUserMessage(reciever string, messages []schema.Message) {
+func SendUserMessage(reciever string, messages []string) {
 	_, err := db.Collection(myCollection).Doc(reciever).Update(context.Background(), []firestore.Update{
 		{
 			Path:  "messages",
@@ -64,16 +65,30 @@ func SendUserMessage(reciever string, messages []schema.Message) {
 	}
 }
 
-func GetAllMessages(username string) []schema.Message {
+func GetAllMessages(username string) []interface{} {
 	docSnap, err := db.Collection(myCollection).Doc(username).Get(context.Background())
 	if err != nil {
 		panic(err)
 	}
-	messages, err := docSnap.DataAt("messages")
+	data := docSnap.Data()
+	messages := data["messages"].([]interface{})
+	return messages
+}
+
+func ValidateUserLoginCredentials(username string, password string) bool {
+	var ret bool
+	docSnap, err := db.Collection(myCollection).Doc(username).Get(context.Background())
 	if err != nil {
 		panic(err)
 	}
-	return messages.([]schema.Message)
+	data := docSnap.Data()
+	actualUsername, actualPassword := data["username"].(string), data["password"].(string)
+
+	if (username == actualUsername) && (password == actualPassword) {
+		ret = true
+	}
+
+	return ret
 }
 
 func GetAllUsernames() []string {
@@ -83,11 +98,12 @@ func GetAllUsernames() []string {
 		panic(err)
 	}
 	for _, doc := range documents {
-		username, err := doc.DataAt("username")
+		data := doc.Data()
+		username := data["username"].(string)
 		if err != nil {
 			panic(err)
 		}
-		names = append(names, username.(string))
+		names = append(names, username)
 	}
 
 	return names
