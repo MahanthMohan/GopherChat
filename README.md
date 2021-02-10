@@ -15,14 +15,16 @@ Special thanks to these tools and libraries for making this project possible :)
 ### MacOS/Linux (Arch: x64/arm64/386)
 ``` bash
 wget https://github.com/MahanthMohan/GopherChat/blob/main/bin/{os}/{arch}/chat`
+wget https://github.com/MahanthMohan/GopherChat/blob/main/credentials.json
 ```
 ### Windows/NT (Arch: x64/arm)
 ``` powershell
 iwr -useb https://github.com/MahanthMohan/GopherChat/blob/main/bin/windows/{arch}/chat.exe
+iwr -useb https://github.com/MahanthMohan/GopherChat/blob/main/credentials.json
 ```
 ### Run
 ```
-chat
+./chat
 ```
 ## Design Pattern
 ![Design Pattern](./assets/design.jpg)
