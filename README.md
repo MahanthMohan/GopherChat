@@ -6,5 +6,15 @@ A simple chat app written in Go that allows you to message other people using th
 - Usage of Cloud Firestore to store messages, which makes it much more secure than Realtime Database
 - Far fewer dependencies, and solid builds and dependency management
 - Cross Platform, which means that the source code can be built for any platform 
+## Packages/Tools Used
+Special thanks to these tools and libraries for making this project possible :)
+- `firebase.google.com/go` for Firestore Client
+- `fatih/colors` for Colourful Terminal Output
+- `golang.org/x/term` for Password Input
+## Installation
+- MacOS/Linux (Arch: x64/arm64/386)
+    - `wget https://github.com/MahanthMohan/GopherChat/blob/main/bin/{os}/{arch}/main`
+- Windows/NT (Arch: x64/arm)
+    - `iwr -useb https://github.com/MahanthMohan/GopherChat/blob/main/bin/windows/{arch}/main.exe`
 ## Design Pattern
 ![Design Pattern](./assets/design.jpg)

@@ -14,10 +14,9 @@ import (
 )
 
 var (
-	usr    schema.User
-	reader = bufio.NewReader(os.Stdin)
-	uname  string
-	pw     string
+	usr   schema.User
+	uname string
+	pw    string
 )
 
 func LaunchApp() {
@@ -63,6 +62,7 @@ func RegisterNewUser() {
 	fmt.Print("Password: ")
 	bytepw, err := term.ReadPassword(int(syscall.Stdin))
 	if err != nil {
+		color.Set(color.BgHiRed, color.Bold)
 		panic(err)
 	}
 	usr.Password = string(bytepw)
@@ -86,6 +86,7 @@ func LoginUser() {
 	fmt.Print("Password: ")
 	bytepw, err := term.ReadPassword(int(syscall.Stdin))
 	if err != nil {
+		color.Set(color.BgHiRed, color.Bold)
 		panic(err)
 	}
 	pw = string(bytepw)
@@ -126,7 +127,7 @@ func viewAllMessages(username string) {
 	} else {
 		color.Set(color.FgHiMagenta, color.Bold)
 	}
-	fmt.Printf("<<>>- %s's Messages -<<>>\n", username)
+	fmt.Printf("\n<<>>- %s's Messages -<<>>\n", username)
 	messages := db.GetAllMessages(username)
 	if len(messages) == 0 {
 		fmt.Println("No Messages Yet!")
@@ -158,11 +159,12 @@ func sendUserMessages() {
 			color.Set(color.FgHiGreen, color.Bold)
 			var groupMessage string
 			fmt.Print("Your Group Message: ")
-			groupMessage, _ = reader.ReadString(byte('\n'))
+			scanner := bufio.NewScanner(os.Stdin)
+			scanner.Scan()
+			groupMessage = scanner.Text()
 			groupMessage = fmt.Sprintf("%s: %s", uname, groupMessage)
 			groupMessages = append(groupMessages, groupMessage)
 			db.SendUserMessage("Group", groupMessages)
-			fmt.Println("")
 			viewAllMessages("Group")
 		} else if userChoice == "dm" {
 			color.Set(color.FgHiMagenta, color.Bold)
@@ -170,11 +172,12 @@ func sendUserMessages() {
 			fmt.Print("Reciever: ")
 			fmt.Scan(&reciever)
 			fmt.Print("Your Direct Message: ")
-			dmMessage, _ = reader.ReadString(byte('\n'))
+			scanner := bufio.NewScanner(os.Stdin)
+			scanner.Scan()
+			dmMessage = scanner.Text()
 			dmMessage = fmt.Sprintf("%s: %s", uname, dmMessage)
 			dmMessages = append(dmMessages, dmMessage)
 			db.SendUserMessage(reciever, dmMessages)
-			fmt.Println("")
 			viewAllMessages(uname)
 		} else if userChoice == "q" || userChoice == "quit" {
 			color.Set(color.FgHiRed, color.Bold)
