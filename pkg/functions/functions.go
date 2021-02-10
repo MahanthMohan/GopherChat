@@ -1,7 +1,9 @@
 package functions
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strings"
 	"syscall"
 
@@ -11,14 +13,15 @@ import (
 )
 
 var (
-	usr   schema.User
-	uname string
-	pw    string
+	usr     schema.User
+	scanner = bufio.NewScanner(os.Stdin)
+	uname   string
+	pw      string
 )
 
 func LaunchApp() {
 	var command string
-	fmt.Println("<<>>-<<>>-<<>>-<<>>-<<>>-  Welcome to GopherChat, A Terminal Chat App <<>>-<<>>-<<>>-<<>>-<<>>-")
+	fmt.Println("<<>>- <<>>- <<>>-  Welcome to GopherChat, A Terminal Chat App -<<>> -<<>> -<<>>")
 	fmt.Print("New (n/new) or Existing (e/existing) User: ")
 	fmt.Scan(&command)
 	if command == "n" || command == "new" {
@@ -80,16 +83,26 @@ func LoginUser() {
 		panic(err)
 	}
 	pw = string(bytepw)
+	var groupMemberChoice string
+	fmt.Print("\nRemain a group member (y/N): ")
+	fmt.Scan(&groupMemberChoice)
+	if groupMemberChoice == "y" {
+		usr.IsGroupMember = true
+	} else {
+		usr.IsGroupMember = false
+	}
 	if db.ValidateUserLoginCredentials(uname, pw) {
-		fmt.Println("\n** Login Successful **")
+		fmt.Println("** Login Successful **")
 		if !(usr.IsGroupMember) {
 			viewAllMessages(uname)
+			sendUserMessages()
 		} else {
 			viewAllMessages("Group")
 			viewAllMessages(uname)
+			sendUserMessages()
 		}
 	} else {
-		fmt.Println("** Please Try Again **")
+		fmt.Println("\n** Please Try Again **")
 		// Repeat LoginUser() a maximum of 3 times before redirecting user back to registration screen
 		for i := 0; i < 3; i++ {
 			LoginUser()
@@ -102,8 +115,17 @@ func LoginUser() {
 func viewAllMessages(username string) {
 	fmt.Printf("<<>>- %s's Messages -<<>>\n", username)
 	messages := db.GetAllMessages(username)
-	for _, msg := range messages {
-		fmt.Println(msg.(string))
+	if len(messages) == 0 {
+		fmt.Println("No Messages Yet!")
+	} else {
+		for _, msg := range messages {
+			if msg != nil {
+				fmt.Println(msg.(string))
+			} else {
+				fmt.Println("No Messages Yet!")
+				break
+			}
+		}
 	}
 }
 
@@ -111,41 +133,41 @@ func sendUserMessages() {
 	fmt.Println("<<>>- Send Messages -<<>>")
 	fmt.Println("--- List of Users ---")
 	var groupMessages, dmMessages []string
-	for _, user := range db.GetAllUsernames() {
+	for user := range db.GetAllUsernames() {
 		fmt.Println(user)
 	}
 	var userChoice, reciever string
-	for !(userChoice == "q" || userChoice == "quit") {
+	for {
 		fmt.Print("Your Choice (msg/dm/(q/quit)): ")
 		fmt.Scan(&userChoice)
 		if userChoice == "msg" {
 			var groupMessage string
 			fmt.Print("Your Group Message: ")
-			fmt.Scan(groupMessage)
+			scanner.Scan()
+			groupMessage = scanner.Text()
 			groupMessage = fmt.Sprintf("%s: %s", uname, groupMessage)
 			groupMessages = append(groupMessages, groupMessage)
 			db.SendUserMessage("Group", groupMessages)
+			fmt.Println("")
 			viewAllMessages("Group")
-			sendUserMessages()
 		} else if userChoice == "dm" {
 			var dmMessage string
-			fmt.Println("--- List of Users ---")
-			for _, user := range db.GetAllUsernames() {
-				fmt.Println(user)
-			}
 			fmt.Print("Reciever: ")
 			fmt.Scan(&reciever)
 			fmt.Print("Your Direct Message: ")
-			fmt.Scan(&dmMessage)
+			scanner.Scan()
+			dmMessage = scanner.Text()
 			dmMessage = fmt.Sprintf("%s: %s", uname, dmMessage)
 			dmMessages = append(dmMessages, dmMessage)
 			db.SendUserMessage(reciever, dmMessages)
+			fmt.Println("")
 			viewAllMessages(uname)
-			sendUserMessages()
+		} else if userChoice == "q" || userChoice == "quit" {
+			fmt.Println("<<>>- Sad to see you go -<<>>")
+			syscall.Exit(0)
 		} else {
 			fmt.Println("** Invalid Choice **")
 			sendUserMessages()
-			break
 		}
 	}
 }

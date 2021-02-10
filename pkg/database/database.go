@@ -79,7 +79,7 @@ func ValidateUserLoginCredentials(username string, password string) bool {
 	var ret bool
 	docSnap, err := db.Collection(myCollection).Doc(username).Get(context.Background())
 	if err != nil {
-		panic(err)
+		ret = false
 	}
 	data := docSnap.Data()
 	actualUsername, actualPassword := data["username"].(string), data["password"].(string)
@@ -91,20 +91,37 @@ func ValidateUserLoginCredentials(username string, password string) bool {
 	return ret
 }
 
-func GetAllUsernames() []string {
-	var names []string
+func createChannelOfUsers() <-chan map[string]interface{} {
+	// Get all documents in the GopherChat Collection
 	documents, err := db.Collection(myCollection).Documents(context.Background()).GetAll()
 	if err != nil {
 		panic(err)
 	}
-	for _, doc := range documents {
-		data := doc.Data()
-		username := data["username"].(string)
-		if err != nil {
-			panic(err)
-		}
-		names = append(names, username)
-	}
 
-	return names
+	in := make(chan map[string]interface{})
+	go func() {
+		for _, doc := range documents {
+			in <- doc.Data()
+		}
+		close(in)
+	}()
+
+	return in
+}
+
+func GetAllUsernames() <-chan string {
+	in := createChannelOfUsers()
+	out := make(chan string)
+
+	go func() {
+		for doc := range in {
+			username := doc["username"]
+			if username != nil {
+				out <- username.(string)
+			}
+		}
+		close(out)
+	}()
+
+	return out
 }
