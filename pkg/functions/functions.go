@@ -81,7 +81,7 @@ func LoginUser() {
 	}
 	pw = string(bytepw)
 	if db.ValidateUserLoginCredentials(uname, pw) {
-		fmt.Println("** Login Successful **")
+		fmt.Println("\n** Login Successful **")
 		if !(usr.IsGroupMember) {
 			viewAllMessages(uname)
 		} else {
@@ -94,6 +94,7 @@ func LoginUser() {
 		for i := 0; i < 3; i++ {
 			LoginUser()
 		}
+		fmt.Println("** Login limit: 3 tries **")
 		RegisterNewUser()
 	}
 }
@@ -113,8 +114,8 @@ func sendUserMessages() {
 	for _, user := range db.GetAllUsernames() {
 		fmt.Println(user)
 	}
-	for {
-		var userChoice, reciever string
+	var userChoice, reciever string
+	for !(userChoice == "q" || userChoice == "quit") {
 		fmt.Print("Your Choice (msg/dm/(q/quit)): ")
 		fmt.Scan(&userChoice)
 		if userChoice == "msg" {
@@ -125,6 +126,7 @@ func sendUserMessages() {
 			groupMessages = append(groupMessages, groupMessage)
 			db.SendUserMessage("Group", groupMessages)
 			viewAllMessages("Group")
+			sendUserMessages()
 		} else if userChoice == "dm" {
 			var dmMessage string
 			fmt.Println("--- List of Users ---")
@@ -139,9 +141,7 @@ func sendUserMessages() {
 			dmMessages = append(dmMessages, dmMessage)
 			db.SendUserMessage(reciever, dmMessages)
 			viewAllMessages(uname)
-		} else if userChoice == "q" || userChoice == "quit" {
-			fmt.Println("<<>>- Hope to see you soon! -<<>>")
-			break
+			sendUserMessages()
 		} else {
 			fmt.Println("** Invalid Choice **")
 			sendUserMessages()
