@@ -24,7 +24,7 @@ iwr -useb https://github.com/MahanthMohan/GopherChat/blob/main/credentials.json
 ```
 ### Run
 ```
-./chat
+./main
 ```
 ## Design Pattern
 ![Design Pattern](./assets/design.jpg)
