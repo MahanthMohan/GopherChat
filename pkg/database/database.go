@@ -86,7 +86,7 @@ func ValidateUserLoginCredentials(username string, password string) bool {
 	ret := false
 	docSnap, err := db.Collection(myCollection).Doc(username).Get(context.Background())
 	if err != nil {
-		recover()
+
 		color.Set(color.FgHiRed, color.Bold)
 		println("** Username does not exist **")
 	} else {
