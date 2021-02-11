@@ -1,9 +1,7 @@
 package functions
 
 import (
-	"bufio"
 	"fmt"
-	"os"
 	"strings"
 	"syscall"
 
@@ -127,7 +125,7 @@ func viewAllMessages(username string) {
 	} else {
 		color.Set(color.FgHiMagenta, color.Bold)
 	}
-	fmt.Printf("\n<<>>- %s's Messages -<<>>\n", username)
+	fmt.Printf("<<>>- %s's Messages -<<>>\n", username)
 	messages := db.GetAllMessages(username)
 	if len(messages) == 0 {
 		fmt.Println("No Messages Yet!")
@@ -155,12 +153,17 @@ func sendUserMessages() {
 	for {
 		fmt.Print("Your Choice (msg/dm/(q/quit)): ")
 		fmt.Scan(&userChoice)
-		reader := bufio.NewReader(os.Stdin)
 		if userChoice == "msg" {
 			color.Set(color.FgHiGreen, color.Bold)
+			var n int
+			fmt.Print("# of words: ")
+			fmt.Scan(&n)
+			msgContent := make([]string, n)
 			fmt.Print("Your Group Message: ")
-			groupMessage, _ := reader.ReadString('\n')
-			groupMessage = fmt.Sprintf("%s: %s", uname, groupMessage)
+			for i := 0; i < n; i++ {
+				fmt.Scan(&msgContent[i])
+			}
+			groupMessage := fmt.Sprintf("%s: %s", uname, strings.Join(msgContent, " "))
 			groupMessages = append(groupMessages, groupMessage)
 			db.SendUserMessage("Group", groupMessages)
 			viewAllMessages("Group")
@@ -168,9 +171,15 @@ func sendUserMessages() {
 			color.Set(color.FgHiMagenta, color.Bold)
 			fmt.Print("Reciever: ")
 			fmt.Scan(&reciever)
+			var n int
+			fmt.Print("# of words: ")
+			fmt.Scan(&n)
+			msgContent := make([]string, n)
 			fmt.Print("Your Direct Message: ")
-			dmMessage, _ := reader.ReadString('\n')
-			dmMessage = fmt.Sprintf("%s: %s", uname, dmMessage)
+			for i := 0; i < n; i++ {
+				fmt.Scan(&msgContent[i])
+			}
+			dmMessage := fmt.Sprintf("%s: %s", uname, strings.Join(msgContent, " "))
 			dmMessages = append(dmMessages, dmMessage)
 			db.SendUserMessage(reciever, dmMessages)
 			viewAllMessages(uname)
