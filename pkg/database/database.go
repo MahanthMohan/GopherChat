@@ -83,16 +83,19 @@ func GetAllMessages(username string) []interface{} {
 }
 
 func ValidateUserLoginCredentials(username string, password string) bool {
-	var ret bool
+	ret := false
 	docSnap, err := db.Collection(myCollection).Doc(username).Get(context.Background())
 	if err != nil {
-		ret = false
-	}
-	data := docSnap.Data()
-	actualUsername, actualPassword := data["username"].(string), data["password"].(string)
+		recover()
+		color.Set(color.FgHiRed, color.Bold)
+		println("** Username does not exist **")
+	} else {
+		data := docSnap.Data()
+		actualUsername, actualPassword := data["username"].(string), data["password"].(string)
 
-	if (username == actualUsername) && (password == actualPassword) {
-		ret = true
+		if (username == actualUsername) && (password == actualPassword) {
+			ret = true
+		}
 	}
 
 	return ret
