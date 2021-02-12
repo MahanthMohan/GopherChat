@@ -175,21 +175,20 @@ func sendUserMessages() {
 			if reciever == uname {
 				color.Set(color.FgHiRed, color.Bold)
 				fmt.Println("** Cannot send a message to yourself! **")
-				viewAllMessages(uname)
-			} else {
-				var n int
-				fmt.Print("# of words: ")
-				fmt.Scan(&n)
-				msgContent := make([]string, n)
-				fmt.Print("Your Direct Message: ")
-				for i := 0; i < n; i++ {
-					fmt.Scan(&msgContent[i])
-				}
-				dmMessage := fmt.Sprintf("%s: %s", uname, strings.Join(msgContent, " "))
-				dmMessages = append(dmMessages, dmMessage)
-				db.SendUserMessage(reciever, dmMessages)
-				viewAllMessages(uname)
+				sendUserMessages()
 			}
+			var n int
+			fmt.Print("# of words: ")
+			fmt.Scan(&n)
+			msgContent := make([]string, n)
+			fmt.Print("Your Direct Message: ")
+			for i := 0; i < n; i++ {
+				fmt.Scan(&msgContent[i])
+			}
+			dmMessage := fmt.Sprintf("%s: %s", uname, strings.Join(msgContent, " "))
+			dmMessages = append(dmMessages, dmMessage)
+			db.SendUserMessage(reciever, dmMessages)
+			viewAllMessages(uname)
 		} else if userChoice == "q" || userChoice == "quit" {
 			color.Set(color.FgHiRed, color.Bold)
 			fmt.Println("<<>>- Sad to see you go -<<>>")
