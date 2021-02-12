@@ -12,9 +12,11 @@ import (
 )
 
 var (
-	usr   schema.User
-	uname string
-	pw    string
+	usr                       schema.User
+	uname                     string
+	pw                        string
+	groupMessages, dmMessages []string
+	failCount                 int = 0
 )
 
 func LaunchApp() {
@@ -110,12 +112,12 @@ func LoginUser() {
 	} else {
 		color.Set(color.FgHiRed, color.Bold)
 		fmt.Println("** Please Try Again **")
-		// Repeat LoginUser() a maximum of 3 times before redirecting user back to registration screen
-		for i := 0; i < 3; i++ {
+		if failCount < 3 {
+			failCount += 1
 			LoginUser()
+		} else {
+			RegisterNewUser()
 		}
-		fmt.Println("** Login limit: 3 tries **")
-		RegisterNewUser()
 	}
 }
 
@@ -146,28 +148,40 @@ func sendUserMessages() {
 	color.Set(color.FgHiMagenta, color.Bold)
 	fmt.Println("<<>>- Send Messages -<<>>")
 	fmt.Println("--- List of Users ---")
-	var groupMessages, dmMessages []string
 	for user := range db.GetAllUsernames() {
 		fmt.Println(user)
 	}
+	for _, groupMsg := range db.GetAllMessages("Group") {
+		groupMessages = append(groupMessages, groupMsg.(string))
+	}
+	for _, dmMsg := range db.GetAllMessages(uname) {
+		dmMessages = append(dmMessages, dmMsg.(string))
+	}
+
 	var userChoice, reciever string
 	for {
 		fmt.Print("Your Choice (msg/dm/(q/quit)): ")
 		fmt.Scan(&userChoice)
 		if userChoice == "msg" {
-			color.Set(color.FgHiGreen, color.Bold)
-			var n int
-			fmt.Print("# of words: ")
-			fmt.Scan(&n)
-			msgContent := make([]string, n)
-			fmt.Print("Your Group Message: ")
-			for i := 0; i < n; i++ {
-				fmt.Scan(&msgContent[i])
+			if usr.IsGroupMember {
+				color.Set(color.FgHiGreen, color.Bold)
+				var n int
+				fmt.Print("# of words: ")
+				fmt.Scan(&n)
+				msgContent := make([]string, n)
+				fmt.Print("Your Group Message: ")
+				for i := 0; i < n; i++ {
+					fmt.Scan(&msgContent[i])
+				}
+				groupMessage := fmt.Sprintf("%s: %s", uname, strings.Join(msgContent, " "))
+				groupMessages = append(groupMessages, groupMessage)
+				db.SendUserMessage("Group", groupMessages)
+				viewAllMessages("Group")
+			} else {
+				color.Set(color.FgHiRed, color.Bold)
+				fmt.Println("** You are not a group member **")
+				sendUserMessages()
 			}
-			groupMessage := fmt.Sprintf("%s: %s", uname, strings.Join(msgContent, " "))
-			groupMessages = append(groupMessages, groupMessage)
-			db.SendUserMessage("Group", groupMessages)
-			viewAllMessages("Group")
 		} else if userChoice == "dm" {
 			color.Set(color.FgHiMagenta, color.Bold)
 			fmt.Print("Reciever: ")
