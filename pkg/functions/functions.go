@@ -149,7 +149,9 @@ func sendUserMessages() {
 	fmt.Println("<<>>- Send Messages -<<>>")
 	fmt.Println("--- List of Users ---")
 	for user := range db.GetAllUsernames() {
-		fmt.Println(user)
+		if uname != user {
+			fmt.Println(user)
+		}
 	}
 	for _, groupMsg := range db.GetAllMessages("Group") {
 		groupMessages = append(groupMessages, groupMsg.(string))
