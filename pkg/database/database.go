@@ -24,14 +24,14 @@ func init() {
 
 	// Whenever there is an error, panic - stopping the goroutine
 	if err != nil {
-		color.Set(color.BgRed, color.Bold)
+		color.Set(color.FgHiRed, color.Bold)
 		panic(err)
 	}
 
 	// Initialize a firestore database
 	db, err = app.Firestore(context.Background())
 	if err != nil {
-		color.Set(color.BgRed, color.Bold)
+		color.Set(color.FgHiRed, color.Bold)
 		panic(err)
 	}
 }
@@ -39,7 +39,7 @@ func init() {
 func CreateUserDocument(usr schema.User) {
 	_, err := db.Collection(myCollection).Doc(usr.Username).Set(context.Background(), usr)
 	if err != nil {
-		color.Set(color.BgRed, color.Bold)
+		color.Set(color.FgHiRed, color.Bold)
 		panic(err)
 	}
 }
@@ -52,7 +52,7 @@ func UpdateMemberStatus(usr schema.User, isGroupMember bool) {
 		},
 	})
 	if err != nil {
-		color.Set(color.BgRed, color.Bold)
+		color.Set(color.FgHiRed, color.Bold)
 		panic(err)
 	}
 }
@@ -66,7 +66,7 @@ func SendUserMessage(reciever string, messages []string) {
 	})
 
 	if err != nil {
-		color.Set(color.BgRed, color.Bold)
+		color.Set(color.FgHiRed, color.Bold)
 		panic(err)
 	}
 }
@@ -74,7 +74,7 @@ func SendUserMessage(reciever string, messages []string) {
 func GetAllMessages(username string) []interface{} {
 	docSnap, err := db.Collection(myCollection).Doc(username).Get(context.Background())
 	if err != nil {
-		color.Set(color.BgRed, color.Bold)
+		color.Set(color.FgHiRed, color.Bold)
 		panic(err)
 	}
 	data := docSnap.Data()
@@ -105,7 +105,7 @@ func createChannelOfUsers() <-chan map[string]interface{} {
 	// Get all documents in the GopherChat Collection
 	documents, err := db.Collection(myCollection).Documents(context.Background()).GetAll()
 	if err != nil {
-		color.Set(color.BgRed, color.Bold)
+		color.Set(color.FgHiRed, color.Bold)
 		panic(err)
 	}
 
