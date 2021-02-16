@@ -15,6 +15,7 @@ var (
 	usr                       schema.User
 	uname                     string
 	pw                        string
+	isGroupMember             bool
 	groupMessages, dmMessages []string
 	failCount                 int = 0
 )
@@ -71,8 +72,9 @@ func RegisterNewUser() {
 	fmt.Scan(&groupMemberChoice)
 	if groupMemberChoice == "y" {
 		usr.IsGroupMember = true
+		db.UpdateMemberStatus(usr.Username, usr.IsGroupMember)
 	} else if groupMemberChoice == "N" {
-		usr.IsGroupMember = false
+		db.UpdateMemberStatus(usr.Username, usr.IsGroupMember)
 	}
 	usr.Messages = []string{}
 	validateUserCredentials(usr)
@@ -90,18 +92,11 @@ func LoginUser() {
 		panic(err)
 	}
 	pw = string(bytepw)
-	var groupMemberChoice string
-	fmt.Print("\nRemain a group member (y/N): ")
-	fmt.Scan(&groupMemberChoice)
-	if groupMemberChoice == "y" {
-		usr.IsGroupMember = true
-	} else {
-		usr.IsGroupMember = false
-	}
+	isGroupMember = db.GetMemberStatus(uname)
 	if db.ValidateUserLoginCredentials(uname, pw) {
 		color.Set(color.FgHiGreen, color.Bold)
-		fmt.Println("** Login Successful **")
-		if !(usr.IsGroupMember) {
+		fmt.Println("\n** Login Successful **")
+		if !(isGroupMember) {
 			viewAllMessages(uname)
 			sendUserMessages()
 		} else {
@@ -165,7 +160,7 @@ func sendUserMessages() {
 		fmt.Print("Your Choice (msg/dm/(q/quit)): ")
 		fmt.Scan(&userChoice)
 		if userChoice == "msg" {
-			if usr.IsGroupMember {
+			if isGroupMember {
 				color.Set(color.FgHiGreen, color.Bold)
 				var n int
 				fmt.Print("# of words: ")
@@ -211,6 +206,17 @@ func sendUserMessages() {
 			db.Close()
 			color.Unset()
 			syscall.Exit(0)
+		} else if userChoice == "status" {
+			var groupMemberChoice string
+			fmt.Print("Remain a group member (y/N): ")
+			fmt.Scan(&groupMemberChoice)
+			if groupMemberChoice == "y" {
+				isGroupMember = true
+				db.UpdateMemberStatus(uname, isGroupMember)
+			} else {
+				isGroupMember = false
+				db.UpdateMemberStatus(uname, isGroupMember)
+			}
 		} else {
 			color.Set(color.FgHiRed, color.Bold)
 			fmt.Println("** Invalid Choice **")

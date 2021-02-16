@@ -14,13 +14,13 @@ Special thanks to these tools and libraries for making this project possible :)
 ## Installation
 ### MacOS/Linux (Arch: x64/arm64/386)
 ``` bash
-wget https://github.com/MahanthMohan/GopherChat/blob/main/bin/{os}/{arch}/main
-wget https://github.com/MahanthMohan/GopherChat/blob/main/credentials.json
+curl -fsSL https://github.com/MahanthMohan/GopherChat/blob/main/bin/{os}/{arch}/main?raw=true -o main
+curl -fsSL https://github.com/MahanthMohan/GopherChat/raw/main/credentials.json -o credentials.json
 ```
 ### Windows/NT (Arch: x64/arm)
 ``` powershell
-iwr -useb https://github.com/MahanthMohan/GopherChat/blob/main/bin/windows/{arch}/main.exe
-iwr -useb https://github.com/MahanthMohan/GopherChat/blob/main/credentials.json
+iwr -useb https://github.com/MahanthMohan/GopherChat/blob/main/bin/windows/{arch}/main.exe?raw=true | ni main.exe -Force
+iwr -useb https://github.com/MahanthMohan/GopherChat/raw/main/credentials.json | ni credentials.json -Force
 ```
 ### Run
 ```

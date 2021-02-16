@@ -44,8 +44,8 @@ func CreateUserDocument(usr schema.User) {
 	}
 }
 
-func UpdateMemberStatus(usr schema.User, isGroupMember bool) {
-	_, err := db.Collection(myCollection).Doc(usr.Username).Update(context.Background(), []firestore.Update{
+func UpdateMemberStatus(username string, isGroupMember bool) {
+	_, err := db.Collection(myCollection).Doc(username).Update(context.Background(), []firestore.Update{
 		{
 			Path:  "isGroupMember",
 			Value: isGroupMember,
@@ -55,6 +55,19 @@ func UpdateMemberStatus(usr schema.User, isGroupMember bool) {
 		color.Set(color.FgHiRed, color.Bold)
 		panic(err)
 	}
+}
+
+func GetMemberStatus(username string) bool {
+	docSnap, err := db.Collection(myCollection).Doc(username).Get(context.Background())
+	if err != nil {
+		color.Set(color.FgHiRed, color.Bold)
+		panic(err)
+	}
+
+	data := docSnap.Data()
+	memberStatus := data["isGroupMember"].(bool)
+
+	return memberStatus
 }
 
 func SendUserMessage(reciever string, messages []string) {
