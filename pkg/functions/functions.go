@@ -157,7 +157,7 @@ func sendUserMessages() {
 
 	var userChoice, reciever string
 	for {
-		fmt.Print("Your Choice (msg/dm/(q/quit)): ")
+		fmt.Print("Your Choice (msg/dm/status/(q/quit)): ")
 		fmt.Scan(&userChoice)
 		if userChoice == "msg" {
 			if isGroupMember {
@@ -213,9 +213,11 @@ func sendUserMessages() {
 			if groupMemberChoice == "y" {
 				isGroupMember = true
 				db.UpdateMemberStatus(uname, isGroupMember)
+				sendUserMessages()
 			} else {
 				isGroupMember = false
 				db.UpdateMemberStatus(uname, isGroupMember)
+				sendUserMessages()
 			}
 		} else {
 			color.Set(color.FgHiRed, color.Bold)
