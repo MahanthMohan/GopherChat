@@ -58,16 +58,19 @@ func UpdateMemberStatus(username string, isGroupMember bool) {
 }
 
 func GetMemberStatus(username string) bool {
-	docSnap, err := db.Collection(myCollection).Doc(username).Get(context.Background())
-	if err != nil {
-		color.Set(color.FgHiRed, color.Bold)
-		panic(err)
-	}
+	var ret bool
+	docSnap, _ := db.Collection(myCollection).Doc(username).Get(context.Background())
 
 	data := docSnap.Data()
-	memberStatus := data["isGroupMember"].(bool)
+	memberStatus := data["isGroupMember"]
 
-	return memberStatus
+	if memberStatus != nil {
+		ret = memberStatus.(bool)
+	} else {
+		ret = false
+	}
+
+	return ret
 }
 
 func SendUserMessage(reciever string, messages []string) {
@@ -99,7 +102,6 @@ func ValidateUserLoginCredentials(username string, password string) bool {
 	ret := false
 	docSnap, err := db.Collection(myCollection).Doc(username).Get(context.Background())
 	if err != nil {
-
 		color.Set(color.FgHiRed, color.Bold)
 		println("** Username does not exist **")
 	} else {
