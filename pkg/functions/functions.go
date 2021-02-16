@@ -72,9 +72,8 @@ func RegisterNewUser() {
 	fmt.Scan(&groupMemberChoice)
 	if groupMemberChoice == "y" {
 		usr.IsGroupMember = true
-		db.UpdateMemberStatus(usr.Username, usr.IsGroupMember)
 	} else if groupMemberChoice == "N" {
-		db.UpdateMemberStatus(usr.Username, usr.IsGroupMember)
+		usr.IsGroupMember = false
 	}
 	usr.Messages = []string{}
 	validateUserCredentials(usr)
