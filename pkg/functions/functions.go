@@ -106,7 +106,7 @@ func LoginUser() {
 		}
 	} else {
 		color.Set(color.FgHiRed, color.Bold)
-		fmt.Println("** Please Try Again **")
+		fmt.Println("\n** Please Try Again **")
 		if failCount < 3 {
 			failCount += 1
 			LoginUser()
