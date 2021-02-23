@@ -14,4 +14,4 @@ WORKDIR /chat
 RUN go build -o chat
 
 # Run the executable using CMD
-CMD ["/chat/chat"]
+CMD ["./chat"]
