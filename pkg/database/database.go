@@ -58,19 +58,18 @@ func UpdateMemberStatus(username string, isGroupMember bool) {
 }
 
 func GetMemberStatus(username string) bool {
-	var ret bool
 	docSnap, _ := db.Collection(myCollection).Doc(username).Get(context.Background())
 
 	data := docSnap.Data()
 	memberStatus := data["isGroupMember"]
 
 	if memberStatus != nil {
-		ret = memberStatus.(bool)
+		return memberStatus.(bool)
 	} else {
-		ret = false
+		return false
 	}
 
-	return ret
+	return false
 }
 
 func SendUserMessage(reciever string, messages []string) {
@@ -99,7 +98,6 @@ func GetAllMessages(username string) []interface{} {
 }
 
 func ValidateUserLoginCredentials(username string, password string) bool {
-	ret := false
 	docSnap, err := db.Collection(myCollection).Doc(username).Get(context.Background())
 	if err != nil {
 		color.Set(color.FgHiRed, color.Bold)
@@ -109,11 +107,11 @@ func ValidateUserLoginCredentials(username string, password string) bool {
 		actualUsername, actualPassword := data["username"].(string), data["password"].(string)
 
 		if (username == actualUsername) && (password == actualPassword) {
-			ret = true
+			return true
 		}
 	}
 
-	return ret
+	return false
 }
 
 func createChannelOfUsers() <-chan map[string]interface{} {

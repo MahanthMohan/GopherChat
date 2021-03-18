@@ -1,17 +1,37 @@
+optimize() {
+		for f in *
+		do
+				upx -9 -k $f
+		done
+}
+
 echo "** Building GopherChat **"
 
 echo "-- (Step 1) Building MacOS/Darwin binaries --"
-gobin=$PWD/bin/darwin/amd64 goos=darwin goarch=amd64 go install *.go
+gobin=$PWD/bin/darwin/amd64 goos=darwin goarch=amd64 go install -ldflags="-s -w" *.go
+cd $PWD/bin/darwin/amd64
+optimize
+cd -
 echo "-- Finished MacOS/Darwin build --"
 
 echo "-- (Step 2) Building Linux binaries --"
-gobin=$PWD/bin/linux/amd64 goos=linux goarch=amd64 go install *.go
-gobin=$PWD/bin/linux/arm64 goos=linux goarch=arm64 go install *.go
+gobin=$PWD/bin/linux/amd64 goos=linux goarch=amd64 go install -ldflags="-s -w" *.go
+cd $PWD/bin/linux/amd64
+optimize
+cd ../arm64
+gobin=$PWD/bin/linux/arm64 goos=linux goarch=arm64 go install -ldflags="-s -w" *.go
+optimize
+cd - && cd -
 echo "-- Finished Linux build --"
 
 echo "-- (Step 3) Building Windows binaries --"
-gobin=$PWD/bin/windows/amd64 goos=windows goarch=amd64 go install *.go
-gobin=$PWD/bin/windows/arm goos=windows goarch=arm go install *.go
+gobin=$PWD/bin/windows/amd64 goos=windows goarch=amd64 go install -ldflags="-s -w" *.go
+cd $PWD/bin/linux/windows/amd64
+optimize
+cd ../arm
+gobin=$PWD/bin/windows/arm goos=windows goarch=arm go install -ldflags="-s -w" *.go
+optimize
+cd - && cd -
 echo "-- Finished Windows build --"
 
 echo "** Finished GopherChat build **"
