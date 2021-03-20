@@ -128,11 +128,8 @@ func viewAllMessages(username string) {
 	} else {
 		for _, msg := range messages {
 			if msg != nil {
-				fmt.Println(msg.(string))
+				fmt.Println(msg)
 				fmt.Println("-----------------------------------")
-			} else {
-				fmt.Println("No Messages Yet!")
-				break
 			}
 		}
 	}
@@ -147,6 +144,7 @@ func sendUserMessages() {
 			fmt.Println(user)
 		}
 	}
+
 	for _, groupMsg := range db.GetAllMessages("Group") {
 		groupMessages = append(groupMessages, groupMsg.(string))
 	}

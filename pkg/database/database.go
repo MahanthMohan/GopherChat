@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"encoding/json"
 
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
@@ -60,16 +61,16 @@ func UpdateMemberStatus(username string, isGroupMember bool) {
 func GetMemberStatus(username string) bool {
 	docSnap, _ := db.Collection(myCollection).Doc(username).Get(context.Background())
 
-	data := docSnap.Data()
-	memberStatus := data["isGroupMember"]
-
-	if memberStatus != nil {
-		return memberStatus.(bool)
-	} else {
-		return false
+	data, err := json.Marshal(docSnap.Data())
+	if err != nil {
+		color.Set(color.FgHiRed, color.Bold)
+		panic(err)
 	}
 
-	return false
+	var userDocument schema.User
+	json.Unmarshal(data, &userDocument)
+
+	return userDocument.IsGroupMember
 }
 
 func SendUserMessage(reciever string, messages []string) {
@@ -92,8 +93,10 @@ func GetAllMessages(username string) []interface{} {
 		color.Set(color.FgHiRed, color.Bold)
 		panic(err)
 	}
+
 	data := docSnap.Data()
 	messages := data["messages"].([]interface{})
+
 	return messages
 }
 
@@ -102,46 +105,44 @@ func ValidateUserLoginCredentials(username string, password string) bool {
 	if err != nil {
 		color.Set(color.FgHiRed, color.Bold)
 		print("\n** Username does not exist **")
-	} else {
-		data := docSnap.Data()
-		actualUsername, actualPassword := data["username"].(string), data["password"].(string)
+	}
 
-		if (username == actualUsername) && (password == actualPassword) {
-			return true
-		}
+	data, err := json.Marshal(docSnap.Data())
+	if err != nil {
+		color.Set(color.FgHiRed, color.Bold)
+		panic(err)
+	}
+
+	var userDocument schema.User
+	json.Unmarshal(data, &userDocument)
+
+	if (username == userDocument.Username) && (password == userDocument.Password) {
+		return true
 	}
 
 	return false
 }
 
-func createChannelOfUsers() <-chan map[string]interface{} {
-	// Get all documents in the GopherChat Collection
+func GetAllUsernames() <-chan string {
 	documents, err := db.Collection(myCollection).Documents(context.Background()).GetAll()
 	if err != nil {
 		color.Set(color.FgHiRed, color.Bold)
 		panic(err)
 	}
 
-	in := make(chan map[string]interface{})
+	out := make(chan string, len(documents))
+
 	go func() {
 		for _, doc := range documents {
-			in <- doc.Data()
-		}
-		close(in)
-	}()
-
-	return in
-}
-
-func GetAllUsernames() <-chan string {
-	in := createChannelOfUsers()
-	out := make(chan string)
-
-	go func() {
-		for doc := range in {
-			username := doc["username"]
-			if username != nil {
-				out <- username.(string)
+			data, err := json.Marshal(doc.Data())
+			if err != nil {
+				color.Set(color.FgHiRed, color.Bold)
+				panic(err)
+			}
+			var userDocument schema.User
+			json.Unmarshal(data, &userDocument)
+			if len(userDocument.Username) != 0 {
+				out <- userDocument.Username
 			}
 		}
 		close(out)
