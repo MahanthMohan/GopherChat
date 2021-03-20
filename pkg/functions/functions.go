@@ -1,7 +1,9 @@
 package functions
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strings"
 	"syscall"
 
@@ -17,7 +19,8 @@ var (
 	pw                        string
 	isGroupMember             bool
 	groupMessages, dmMessages []string
-	failCount                 int = 0
+	failCount                 int            = 0
+	scanner                   *bufio.Scanner = bufio.NewScanner(os.Stdin)
 )
 
 func LaunchApp() {
@@ -123,15 +126,9 @@ func viewAllMessages(username string) {
 	}
 	fmt.Printf("<<>>- %s's Messages -<<>>\n", username)
 	messages := db.GetAllMessages(username)
-	if len(messages) == 0 {
-		fmt.Println("No Messages Yet!")
-	} else {
-		for _, msg := range messages {
-			if msg != nil {
-				fmt.Println(msg)
-				fmt.Println("-----------------------------------")
-			}
-		}
+	for msg := range messages {
+		fmt.Println(msg)
+		fmt.Println("-----------------------------------")
 	}
 }
 
@@ -145,11 +142,11 @@ func sendUserMessages() {
 		}
 	}
 
-	for _, groupMsg := range db.GetAllMessages("Group") {
-		groupMessages = append(groupMessages, groupMsg.(string))
+	for groupMsg := range db.GetAllMessages("Group") {
+		groupMessages = append(groupMessages, groupMsg)
 	}
-	for _, dmMsg := range db.GetAllMessages(uname) {
-		dmMessages = append(dmMessages, dmMsg.(string))
+	for dmMsg := range db.GetAllMessages(uname) {
+		dmMessages = append(dmMessages, dmMsg)
 	}
 
 	var userChoice, reciever string

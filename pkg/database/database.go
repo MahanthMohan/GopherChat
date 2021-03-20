@@ -87,17 +87,33 @@ func SendUserMessage(reciever string, messages []string) {
 	}
 }
 
-func GetAllMessages(username string) []interface{} {
+func GetAllMessages(username string) <-chan string {
 	docSnap, err := db.Collection(myCollection).Doc(username).Get(context.Background())
 	if err != nil {
 		color.Set(color.FgHiRed, color.Bold)
 		panic(err)
 	}
 
-	data := docSnap.Data()
-	messages := data["messages"].([]interface{})
+	data, err := json.Marshal(docSnap.Data())
+	if err != nil {
+		color.Set(color.FgHiRed, color.Bold)
+		panic(err)
+	}
 
-	return messages
+	var userDocument schema.User
+	json.Unmarshal(data, &userDocument)
+	out := make(chan string, len(userDocument.Messages))
+
+	go func() {
+		for _, msg := range userDocument.Messages {
+			if len(msg) != 0 {
+				out <- msg
+			}
+		}
+		close(out)
+	}()
+
+	return out
 }
 
 func ValidateUserLoginCredentials(username string, password string) bool {
